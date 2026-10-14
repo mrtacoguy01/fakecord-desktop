@@ -10,7 +10,7 @@ export const DefaultEquibopSettings: Settings = {
     discordBranch: "stable",
     hardwareAcceleration: true,
     hardwareVideoAcceleration: false,
-    nativeTitleBar: true,
+    nativeTitleBar: false,
     staticTitle: false,
     enableMenu: false,
     enableShadow: true,

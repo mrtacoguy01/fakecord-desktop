@@ -18,11 +18,8 @@ const STATE_FILE = join(DATA_DIR, "state.json");
 
 function migrateSettings(settings: any) {
     if (typeof settings.customTitleBar === "boolean") {
+        settings.nativeTitleBar ??= !settings.customTitleBar;
         delete settings.customTitleBar;
-    }
-    if (!settings._nativeTitleBarDefaulted) {
-        settings.nativeTitleBar = true;
-        settings._nativeTitleBarDefaulted = true;
     }
 }
 
