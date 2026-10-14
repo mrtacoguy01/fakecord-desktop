@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Fakecord
+GenericName=Internet Messenger
+Type=Application
+Exec=fakecord %U
+Icon=org.fakecord.fakecord
+Categories=Network;InstantMessaging;Chat;
+Keywords=discord;vencord;electron;chat;fakecord;
+MimeType=x-scheme-handler/discord;x-scheme-handler/fakecord;
+StartupWMClass=fakecord

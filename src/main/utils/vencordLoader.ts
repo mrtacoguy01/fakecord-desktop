@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { existsSync } from "fs";
-import { join } from "path";
+import { copyFileSync, existsSync, mkdirSync } from "fs";
+import { dirname, join } from "path";
+import { STATIC_DIR } from "shared/paths";
 
 import { USER_AGENT } from "../constants";
 import { VENCORD_DIR } from "../vencordDir";
@@ -37,6 +38,13 @@ export async function githubGet(endpoint: string) {
 }
 
 export async function downloadVencordAsar() {
+    const bundledAsar = join(STATIC_DIR, "equicord.asar");
+    if (existsSync(bundledAsar)) {
+        mkdirSync(dirname(VENCORD_DIR), { recursive: true });
+        copyFileSync(bundledAsar, VENCORD_DIR);
+        return;
+    }
+
     await downloadFile(
         "https://github.com/Equicord/Equicord/releases/latest/download/equibop.asar",
         VENCORD_DIR,
@@ -50,6 +58,17 @@ export function isValidVencordInstall(dir: string) {
 }
 
 export async function ensureVencordFiles() {
+    const bundledAsar = join(STATIC_DIR, "equicord.asar");
+    if (existsSync(bundledAsar)) {
+        try {
+            mkdirSync(dirname(VENCORD_DIR), { recursive: true });
+            copyFileSync(bundledAsar, VENCORD_DIR);
+            return;
+        } catch (err) {
+            console.error("Failed to copy bundled equicord.asar:", err);
+        }
+    }
+
     if (existsSync(VENCORD_DIR)) return;
 
     await downloadVencordAsar();

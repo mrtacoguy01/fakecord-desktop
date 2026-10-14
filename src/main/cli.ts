@@ -48,6 +48,11 @@ const options = {
         argumentName: "ua",
         description: "Set a custom User-Agent. May trigger anti-spam or break voice chat"
     },
+    "instance-url": {
+        type: "string",
+        argumentName: "url",
+        description: "Specify a custom Discord / Fosscord instance URL to connect to"
+    },
     "user-agent-os": {
         type: "string",
         description: "Set User-Agent to a specific operating system. May trigger anti-spam or break voice chat",

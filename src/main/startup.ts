@@ -22,7 +22,7 @@ import { Settings, State } from "./settings";
 import { setAsDefaultProtocolClient } from "./utils/setAsDefaultProtocolClient";
 import { isDeckGameMode } from "./utils/steamOS";
 
-console.log("Equibop v" + app.getVersion());
+console.log("Fakecord v" + app.getVersion());
 
 process.env.EQUICORD_USER_DATA_DIR = DATA_DIR;
 
@@ -48,6 +48,7 @@ function clearStaleWasmCodeCache() {
 function init() {
     clearStaleWasmCodeCache();
     setAsDefaultProtocolClient("discord");
+    setAsDefaultProtocolClient("fakecord");
 
     const { disableSmoothScroll, hardwareAcceleration, hardwareVideoAcceleration } = Settings.store;
     const { launchArguments } = State.store;
@@ -134,7 +135,7 @@ function init() {
     if (isDeckGameMode) nativeTheme.themeSource = "dark";
 
     app.whenReady().then(async () => {
-        if (process.platform === "win32") app.setAppUserModelId("org.equicord.equibop");
+        if (process.platform === "win32") app.setAppUserModelId("org.fakecord.fakecord");
 
         registerScreenShareHandler();
         registerMediaPermissionsHandler();

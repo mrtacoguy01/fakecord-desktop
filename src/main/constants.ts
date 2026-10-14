@@ -10,15 +10,17 @@ import { dirname, join } from "path";
 
 import { CommandLine } from "./cli";
 
-const equibopDir = dirname(process.execPath);
+const fakecordDir = dirname(process.execPath);
 
 export const PORTABLE =
     process.platform === "win32" &&
     !process.execPath.toLowerCase().endsWith("electron.exe") &&
-    !existsSync(join(equibopDir, "Uninstall Equibop.exe"));
+    !existsSync(join(fakecordDir, "Uninstall Fakecord.exe"));
 
 export const DATA_DIR =
-    process.env.EQUICORD_USER_DATA_DIR || (PORTABLE ? join(equibopDir, "Data") : join(app.getPath("userData")));
+    process.env.FAKECORD_USER_DATA_DIR ||
+    process.env.EQUICORD_USER_DATA_DIR ||
+    (PORTABLE ? join(fakecordDir, "Data") : join(app.getPath("userData")));
 
 mkdirSync(DATA_DIR, { recursive: true });
 
@@ -31,7 +33,7 @@ export const VENCORD_QUICKCSS_FILE = join(VENCORD_SETTINGS_DIR, "quickCss.css");
 export const VENCORD_SETTINGS_FILE = join(VENCORD_SETTINGS_DIR, "settings.json");
 export const VENCORD_THEMES_DIR = join(DATA_DIR, "themes");
 
-export const USER_AGENT = `Equibop/${app.getVersion()} (https://github.com/Equicord/Equibop)`;
+export const USER_AGENT = `Fakecord/${app.getVersion()} (https://chat.servrr.net)`;
 
 // dimensions shamelessly stolen from Discord Desktop :3
 export const MIN_WIDTH = 940;
@@ -39,7 +41,8 @@ export const MIN_HEIGHT = 500;
 export const DEFAULT_WIDTH = 1280;
 export const DEFAULT_HEIGHT = 720;
 
-export const DISCORD_HOSTNAMES = ["discord.com", "canary.discord.com", "ptb.discord.com"];
+export const DEFAULT_INSTANCE_URL = "https://chat.servrr.net";
+export const DISCORD_HOSTNAMES = ["chat.servrr.net", "discord.com", "canary.discord.com", "ptb.discord.com"];
 
 const VersionString = `AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${process.versions.chrome.split(".")[0]}.0.0.0 Safari/537.36`;
 const BrowserUserAgents = {

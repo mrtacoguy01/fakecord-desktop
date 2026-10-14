@@ -27,21 +27,83 @@ import { VesktopSettingsIcon } from "shared/icons";
 VesktopLogger.log("read if cute :3");
 VesktopLogger.log(`Equibop v${VesktopNative.app.getVersion()}`);
 
-const { customEntries, customSections } = Vencord.Plugins.plugins.Settings as any as typeof SettingsPlugin;
+function attachEquibopSettings(vencordObj = (window as any).Vencord): boolean {
+    try {
+        const settingsPlugin = vencordObj?.Plugins?.plugins?.Settings as typeof SettingsPlugin | undefined;
+        if (!settingsPlugin) return false;
 
-customEntries.push({
-    key: "equicord_equibop_settings",
-    title: "Equibop Settings",
-    Component: SettingsUi,
-    Icon: VesktopSettingsIcon
-});
+        if (!Array.isArray(settingsPlugin.customEntries)) {
+            settingsPlugin.customEntries = [];
+        }
 
-customSections.push(() => ({
-    section: "EquibopSettings",
-    label: "Equibop Settings",
-    element: SettingsUi,
-    className: "vc-equibop-settings"
-}));
+        if (!settingsPlugin.customEntries.some((e: any) => e?.key === "equicord_equibop_settings")) {
+            settingsPlugin.customEntries.push({
+                key: "equicord_equibop_settings",
+                title: "Equibop Settings",
+                Component: SettingsUi,
+                Icon: VesktopSettingsIcon
+            });
+        }
+
+        if (!Array.isArray(settingsPlugin.customSections)) {
+            settingsPlugin.customSections = [];
+        }
+
+        if (!settingsPlugin.customSections.some((fn: any) => {
+            try { return fn?.()?.section === "EquibopSettings"; } catch { return false; }
+        })) {
+            settingsPlugin.customSections.push(() => ({
+                section: "EquibopSettings",
+                label: "Equibop Settings",
+                element: SettingsUi,
+                className: "vc-equibop-settings"
+            }));
+        }
+
+        if (typeof (settingsPlugin as any).buildLayout === "function" && !(settingsPlugin as any).__equibopHooked) {
+            (settingsPlugin as any).__equibopHooked = true;
+            const originalBuildLayout = (settingsPlugin as any).buildLayout.bind(settingsPlugin);
+            (settingsPlugin as any).buildLayout = function(builder: any) {
+                if (!this.customEntries?.some((e: any) => e?.key === "equicord_equibop_settings")) {
+                    this.customEntries?.push({
+                        key: "equicord_equibop_settings",
+                        title: "Equibop Settings",
+                        Component: SettingsUi,
+                        Icon: VesktopSettingsIcon
+                    });
+                }
+                return originalBuildLayout(builder);
+            };
+        }
+
+        return true;
+    } catch (e) {
+        VesktopLogger.error("Failed to attach Equibop settings:", e);
+        return false;
+    }
+}
+
+attachEquibopSettings();
+
+let _vencord = (window as any).Vencord;
+try {
+    Object.defineProperty(window, "Vencord", {
+        configurable: true,
+        enumerable: true,
+        get() {
+            return _vencord;
+        },
+        set(val) {
+            _vencord = val;
+            attachEquibopSettings(val);
+        }
+    });
+} catch {}
+
+const settingsPollInterval = setInterval(() => {
+    attachEquibopSettings();
+}, 250);
+setTimeout(() => clearInterval(settingsPollInterval), 20000);
 
 VesktopNative.voice.onToggleSelfMute(() => VoiceActions.toggleSelfMute());
 VesktopNative.voice.onToggleSelfDeaf(() => VoiceActions.toggleSelfDeaf());

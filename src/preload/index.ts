@@ -22,5 +22,12 @@ Function(
     ipcRenderer.sendSync(IpcEvents.GET_VENCORD_PRELOAD_SCRIPT)
 )(require, Buffer, process, clearImmediate, setImmediate);
 
-webFrame.executeJavaScript(ipcRenderer.sendSync(IpcEvents.GET_VENCORD_RENDERER_SCRIPT));
-webFrame.executeJavaScript(ipcRenderer.sendSync(IpcEvents.GET_VESKTOP_RENDERER_SCRIPT));
+const vencordCode = ipcRenderer.sendSync(IpcEvents.GET_VENCORD_RENDERER_SCRIPT);
+const vesktopCode = ipcRenderer.sendSync(IpcEvents.GET_VESKTOP_RENDERER_SCRIPT);
+
+webFrame
+    .executeJavaScript(vencordCode + "\n;if (typeof Vencord !== 'undefined') { window.Vencord = Vencord; }")
+    .finally(() => {
+        webFrame.executeJavaScript(vesktopCode);
+    });
+

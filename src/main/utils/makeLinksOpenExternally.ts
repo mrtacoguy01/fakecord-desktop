@@ -55,7 +55,15 @@ export function makeLinksOpenExternally(win: BrowserWindow) {
             return { action: "deny" };
         }
 
-        if (frameName.startsWith("DISCORD_") && pathname === "/popout" && DISCORD_HOSTNAMES.includes(hostname)) {
+        const customInstance = Settings.store.customInstanceUrl || process.env.FAKECORD_URL || process.env.FOSSCORD_URL || process.env.INSTANCE_URL;
+        let isInstanceHost = DISCORD_HOSTNAMES.includes(hostname);
+        if (!isInstanceHost && customInstance) {
+            try {
+                isInstanceHost = new URL(/^https?:\/\//i.test(customInstance) ? customInstance : `https://${customInstance}`).hostname === hostname;
+            } catch {}
+        }
+
+        if (frameName.startsWith("DISCORD_") && pathname === "/popout" && isInstanceHost) {
             return createOrFocusPopup(frameName, features);
         }
 

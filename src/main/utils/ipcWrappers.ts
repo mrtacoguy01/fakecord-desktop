@@ -7,6 +7,8 @@
 import { ipcMain, IpcMainEvent, IpcMainInvokeEvent, WebFrameMain } from "electron";
 import { DISCORD_HOSTNAMES } from "main/constants";
 import { IpcEvents, UpdaterIpcEvents } from "shared/IpcEvents";
+import { CommandLine } from "../cli";
+import { Settings } from "../settings";
 
 export function validateSender(frame: WebFrameMain | null, event: string) {
     if (!frame) throw new Error(`ipc[${event}]: No sender frame`);
@@ -18,9 +20,18 @@ export function validateSender(frame: WebFrameMain | null, event: string) {
         throw new Error(`ipc[${event}]: Invalid URL ${frame.url}`);
     }
 
-    if (protocol === "file:" || protocol === "vesktop:" || protocol === "equibop:") return;
+    if (protocol === "file:" || protocol === "vesktop:" || protocol === "equibop:" || protocol === "fakecord:") return;
 
-    if (!DISCORD_HOSTNAMES.includes(hostname)) {
+    const customInstance = CommandLine?.values?.["instance-url"] || process.env.FAKECORD_URL || process.env.FOSSCORD_URL || process.env.INSTANCE_URL || Settings?.store?.customInstanceUrl;
+    const allowedHostnames = [...DISCORD_HOSTNAMES];
+    if (customInstance) {
+        try {
+            const parsed = new URL(/^https?:\/\//i.test(customInstance) ? customInstance : `https://${customInstance}`);
+            allowedHostnames.push(parsed.hostname);
+        } catch {}
+    }
+
+    if (!allowedHostnames.includes(hostname)) {
         throw new Error(`ipc[${event}]: Disallowed hostname ${hostname}`);
     }
 }

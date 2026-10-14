@@ -27,7 +27,7 @@ import { createAboutWindow } from "./about";
 import { destroyAppBadge } from "./appBadge";
 import { cleanupArRPC, initArRPC, setupArRPC } from "./arrpc";
 import { CommandLine } from "./cli";
-import { BrowserUserAgent, DEFAULT_HEIGHT, DEFAULT_WIDTH, isLinux, MIN_HEIGHT, MIN_WIDTH } from "./constants";
+import { BrowserUserAgent, DEFAULT_HEIGHT, DEFAULT_INSTANCE_URL, DEFAULT_WIDTH, isLinux, MIN_HEIGHT, MIN_WIDTH } from "./constants";
 import { AppEvents } from "./events";
 import { spoofGnu } from "./gnuSpoofing";
 import { sendRendererCommand } from "./ipcCommands";
@@ -404,7 +404,7 @@ function buildBrowserWindowOptions(): BrowserWindowConstructorOptions {
     }
 
     if (staticTitle) {
-        options.title = "Equibop";
+        options.title = "Fakecord";
     }
 
     if (process.platform === "darwin") {
@@ -472,6 +472,17 @@ function createMainWindow() {
     addSplashLog();
     win.webContents.setWebRTCIPHandlingPolicy("default_public_and_private_interfaces");
 
+    session.defaultSession.webRequest.onBeforeRequest(
+        { urls: ["*://*/assets/vencord/*", "*://*/*vencord.js*"] },
+        (details, callback) => {
+            if (details.url.includes("vencord.js") || details.url.includes("/assets/vencord/")) {
+                console.log("Blocking duplicate server vencord.js in desktop client:", details.url);
+                return callback({ cancel: true });
+            }
+            callback({});
+        }
+    );
+
     // if the open-url event is fired (in index.ts) while starting up, darwinURL will be set. If not fall back to checking the process args (which Windows and Linux use for URI calling.)
     // win.webContents.session.clearCache().then(() => {
     loadUrl(darwinURL || process.argv.find(arg => arg.startsWith("discord://")));
@@ -483,13 +494,34 @@ function createMainWindow() {
 
 const runVencordMain = once(() => require(VENCORD_DIR));
 
-export function loadUrl(uri: string | undefined) {
-    const branch = Settings.store.discordBranch;
-    const subdomain = branch === "canary" || branch === "ptb" ? `${branch}.` : "";
+export function getInstanceUrl(): string | undefined {
+    const cliUrl = CommandLine.values["instance-url"];
+    if (cliUrl) return cliUrl;
+    if (process.env.FOSSCORD_URL) return process.env.FOSSCORD_URL;
+    if (process.env.INSTANCE_URL) return process.env.INSTANCE_URL;
+    if (Settings.store.customInstanceUrl) return Settings.store.customInstanceUrl;
+    return undefined;
+}
 
-    // we do not rely on 'did-finish-load' because it fires even if loadURL fails which triggers early detruction of the splash
+export function loadUrl(uri: string | undefined) {
+    const instance = getInstanceUrl() || DEFAULT_INSTANCE_URL;
+    let base = instance.trim();
+    if (!/^https?:\/\//i.test(base)) base = `https://${base}`;
+    const baseClean = base.endsWith("/") ? base.slice(0, -1) : base;
+
+    let target = `${baseClean}/app`;
+    if (uri) {
+        try {
+            const parsed = new URL(uri, baseClean);
+            target = parsed.href;
+        } catch {
+            target = `${baseClean}/app`;
+        }
+    }
+
+    // we do not rely on 'did-finish-load' because it fires even if loadURL fails which triggers early destruction of the splash
     mainWin
-        .loadURL(`https://${subdomain}discord.com/${uri ? new URL(uri).pathname.slice(1) || "app" : "app"}`)
+        .loadURL(target)
         .then(() => AppEvents.emit("appLoaded"))
         .catch(error => retryUrl(error.url, error.code));
 }
@@ -497,7 +529,7 @@ export function loadUrl(uri: string | undefined) {
 const retryDelay = 1000;
 function retryUrl(url: string, description: string) {
     console.log(`retrying in ${retryDelay}ms`);
-    updateSplashMessage(`Failed to load Discord: ${description}`);
+    updateSplashMessage(`Failed to load Fakecord: ${description}`);
     setTimeout(() => loadUrl(url), retryDelay);
 }
 

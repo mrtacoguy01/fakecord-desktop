@@ -537,7 +537,7 @@ StatusNotifierItem::StatusNotifierItem()
         return;
     }
 
-    service_name = "org.equicord.equibop.StatusNotifierItem";
+    service_name = "org.fakecord.fakecord.StatusNotifierItem";
     object_path = "/StatusNotifierItem";
 }
 

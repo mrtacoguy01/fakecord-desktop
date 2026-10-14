@@ -19,7 +19,7 @@ import { makeLinksOpenExternally } from "./utils/makeLinksOpenExternally";
 import { loadView } from "./vesktopStatic";
 
 interface Data {
-    discordBranch: "stable" | "canary" | "ptb";
+    discordBranch?: "stable" | "canary" | "ptb";
     minimizeToTray?: "on";
     autoStart?: "on";
     importSettings?: "on";
@@ -51,7 +51,7 @@ export function createFirstLaunchTour() {
         const data = JSON.parse(msg.slice(5)) as Data;
 
         State.store.firstLaunch = false;
-        Settings.store.discordBranch = data.discordBranch;
+        Settings.store.discordBranch = data.discordBranch ?? "stable";
         Settings.store.minimizeToTray = !!data.minimizeToTray;
         Settings.store.arRPC = !!data.richPresence;
 
