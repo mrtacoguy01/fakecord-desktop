@@ -25,6 +25,7 @@
         "testTypes": "tsc --noEmit",
         "watch": "bun run build --watch",
         "generateMeta": "bun run scripts/utils/generateMeta.mts",
+        "updatePlugins": "node ../fosscord-server/scripts/build-desktop-asar.js",
         "updateArrpcDB": "bun ./node_modules/arrpc-bun/scripts/update_db.ts",
         "postinstall": "bun updateArrpcDB && bun compileArrpc"
     },
